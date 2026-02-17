@@ -1,7 +1,5 @@
-.container {
-    background-color: #0a1428; /* Changed from #0a0a0f */
-}
-
-.header {
-    background-color: #0d1b2a; /* Changed from #0f0f18 */
+:root {
+  --color-bg-dark: #0a0a0f;
+  --color-bg-section: #0f0f18;
+  /* Other CSS variables */
 }
