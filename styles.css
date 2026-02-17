@@ -1,7 +1,10 @@
-.container {
-    background-color: #0a1428; /* Changed from #0a0a0f */
+/* Original styles.css content from commit 34c6963 */
+body {
+    background-color: white;
+    color: black;
 }
 
+<<<<<<< HEAD
 <<<<<<< HEAD
 .header {
     background-color: #0d1b2a; /* Changed from #0f0f18 */
@@ -1203,4 +1206,11 @@
         border-width: 3px;
     }
 >>>>>>> parent of 9947e60 (color changed of button)
+=======
+h1 {
+    font-size: 24px;
+    color: blue;
+>>>>>>> 380753ec6d6126207248a061542eea3cc4c5ecb2
 }
+
+/* Additional styles go here */
