@@ -284,7 +284,8 @@ address {
     justify-content: center;
     width: 30px;
     height: 30px;
-    z-index: 101;
+    z-index: 1000;
+    position: relative;
 }
 
 .hamburger {
@@ -1294,7 +1295,13 @@ address {
         --space-2xl: 3.5rem;
     }
     
-    /* Navigation */
+    /* Navigation — remove backdrop-filter so it doesn't trap fixed children */
+    .navbar {
+        backdrop-filter: none;
+        -webkit-backdrop-filter: none;
+        background: rgba(10, 10, 15, 0.97);
+    }
+    
     .nav-toggle {
         display: flex;
     }
@@ -1303,14 +1310,14 @@ address {
         position: fixed;
         top: 0;
         left: 0;
-        right: 0;
-        bottom: 0;
+        width: 100%;
+        height: 100%;
         flex-direction: column;
         align-items: center;
         justify-content: center;
-        gap: var(--space-lg);
-        background: rgba(10, 10, 15, 0.98);
-        backdrop-filter: blur(10px);
+        gap: var(--space-xl);
+        background: #0a0a0f;
+        z-index: 999;
         opacity: 0;
         visibility: hidden;
         transform: translateX(100%);
@@ -1324,7 +1331,19 @@ address {
     }
     
     .nav-link {
-        font-size: 1.3rem;
+        font-size: 1.4rem;
+        color: var(--color-white);
+        padding: var(--space-sm) var(--space-lg);
+    }
+    
+    .nav-link:hover,
+    .nav-link.active {
+        color: var(--color-primary-light);
+    }
+    
+    /* Students Worldwide grid */
+    .students-grid {
+        grid-template-columns: 1fr 1fr;
     }
     
     /* Hero */
@@ -1402,6 +1421,18 @@ address {
     .info-card {
         flex-direction: column;
         text-align: center;
+    }
+    
+    .nav-link {
+        font-size: 1.1rem;
+    }
+    
+    .students-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .student-title {
+        font-size: 1.05rem;
     }
 }
 
