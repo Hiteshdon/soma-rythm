@@ -24,8 +24,7 @@ mongoose.connect(process.env.MONGO_URI)
 // MIDDLEWARE
 // ================================
 app.use(cors({
-    origin: FRONTEND_URL, // restrict later to your domain
-    methods: ['POST', 'GET'],
+  origin: 'https://somarythm.co.in'
 }));
 app.use(express.json());
 
