@@ -490,7 +490,7 @@
     const data = Object.fromEntries(formData.entries());
 
     try {
-        const response = await fetch('https://somarythm-api.onrender.com/api/form', {
+        const response = await fetch('https://soma-rythm-2.onrender.com/api/form', {
     method: 'POST',
     headers: {
         'Content-Type': 'application/json'
