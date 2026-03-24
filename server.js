@@ -23,9 +23,7 @@ mongoose.connect(process.env.MONGO_URI)
 // ================================
 // MIDDLEWARE
 // ================================
-app.use(cors({
-  origin: 'https://somarythm.co.in'
-}));
+app.use(cors());
 app.use(express.json());
 
 // ================================
