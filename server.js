@@ -3,7 +3,7 @@ import cors from 'cors';
 import mongoose from 'mongoose';
 import nodemailer from 'nodemailer';
 import 'dotenv/config';
-
+import { Resend } from 'resend';
 const app = express();
 
 // ================================
@@ -49,13 +49,16 @@ function formatFormData(data) {
 // ================================
 // EMAIL SETUP
 // ================================
-const transporter = nodemailer.createTransport({
+const resend = new Resend(process.env.RESEND_API_KEY);
+
+
+/* const transporter = nodemailer.createTransport({
     service: 'gmail',
     auth: {
         user: EMAIL_USER,
         pass: EMAIL_PASS
     }
-});
+});*/
 
 // ================================
 // ROUTES
@@ -114,13 +117,26 @@ app.post('/api/form', async (req, res) => {
             .map(([k, v]) => `${k.toUpperCase()}: ${v}`)
             .join('\n');
 
-        await transporter.sendMail({
+        /*await transporter.sendMail({
             from: `"SomaRhythm Academy" <${process.env.EMAIL_USER}>`,
             replyTo: data.email,
             to: process.env.EMAIL_USER,
             subject: `🎶 ${classType.toUpperCase()} CLASS ENROLLMENT`,
             text: formattedText
-        });
+        });*/
+
+        await resend.emails.send({
+    from: `SomaRhythm Academy <${process.env.EMAIL_FROM}>`,
+    to: process.env.EMAIL_TO,
+    reply_to: data.email,
+    subject: `🎶 ${classType.toUpperCase()} CLASS ENROLLMENT`,
+    html: `
+        <h3>New ${classType} Enrollment</h3>
+        ${Object.entries(data)
+            .map(([k, v]) => `<p><strong>${k}:</strong> ${v}</p>`)
+            .join('')}
+    `,
+});
 
         console.log(`📩 Saved + Sent (${classType})`);
 
