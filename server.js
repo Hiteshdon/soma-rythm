@@ -17,15 +17,21 @@ const FRONTEND_URL = process.env.FRONTEND_URL || '*';
 // ================================
 // DATABASE CONNECTION
 // ================================
+/*mongoose.connect(process.env.MONGO_URI)
+    .then(() => console.log('🗄️ MongoDB connected'))
+    .catch(err => console.error('❌ DB error:', err));*/
 mongoose.connect(process.env.MONGO_URI)
     .then(() => console.log('🗄️ MongoDB connected'))
-    .catch(err => console.error('❌ DB error:', err));
+    .catch(err => {
+        console.error('❌ DB error:', err);
+        process.exit(1); // force crash visibly
+    });
 // ================================
 // MIDDLEWARE
 // ================================
 app.use(cors());
 app.use(express.json());
-
+console.log("🚀 Starting server...");
 // ================================
 // VALIDATION HELPER
 // ================================
@@ -213,6 +219,9 @@ app.post('/api/form', async (req, res) => {
 // ================================
 // SERVER START
 // ================================
-app.listen(PORT, () => {
-    console.log(`🚀 Server running on http://localhost:${PORT}`);
+console.log("📡 About to start server...");
+
+app.listen(PORT, '0.0.0.0', () => {
+    console.log(`🚀 Server running on port ${PORT}`);
 });
+
