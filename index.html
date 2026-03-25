@@ -184,15 +184,15 @@
     </section>
 
     <!-- Videos Section -->
-    <section id="videos" class="section videos">
+    <!--<section id="videos" class="section videos">
         <div class="container">
             <div class="section-header animate-on-scroll">
                 <h2 class="section-title">Demo <span class="accent">Videos</span></h2>
                 <p class="section-subtitle">See our teaching style in action</p>
             </div>
-            <div class="videos-grid">
+            <div class="videos-grid">-->
                 <!-- Vocals Video -->
-                <div id="video-vocals" class="video-card glass-card animate-on-scroll">
+                <!--<div id="video-vocals" class="video-card glass-card animate-on-scroll">
                     <a href="https://www.youtube.com/watch?v=u3-OsFD3d9o" target="_blank" rel="noopener noreferrer" class="video-thumb-link" aria-label="Watch Vocal Demonstration on YouTube">
                         <div class="video-wrapper">
                             <img src="https://img.youtube.com/vi/u3-OsFD3d9o/hqdefault.jpg" alt="Vocal Demonstration - SomaRhythm Music Academy" class="video-thumbnail" loading="lazy">
@@ -205,10 +205,10 @@
                         <h3 class="video-title">🎤 Vocal Demonstration</h3>
                         <p class="video-caption">Experience our vocal training methodology — from breath control exercises to expressive performance techniques.</p>
                     </div>
-                </div>
+                </div>-->
 
                 <!-- Guitar Video -->
-                <div id="video-guitar" class="video-card glass-card animate-on-scroll">
+                <!--<div id="video-guitar" class="video-card glass-card animate-on-scroll">
                     <a href="https://www.youtube.com/watch?v=ThGKXTFo3Fc" target="_blank" rel="noopener noreferrer" class="video-thumb-link" aria-label="Watch Guitar Demonstration on YouTube">
                         <div class="video-wrapper">
                             <img src="https://img.youtube.com/vi/ThGKXTFo3Fc/hqdefault.jpg" alt="Guitar Demonstration - SomaRhythm Music Academy" class="video-thumbnail" loading="lazy">
@@ -224,8 +224,60 @@
                 </div>
             </div>
         </div>
-    </section>
+    </section>-->
 
+<!-- Videos Section -->
+<section id="videos" class="section videos">
+    <div class="container">
+        <div class="section-header animate-on-scroll">
+            <h2 class="section-title">Demo <span class="accent">Videos</span></h2>
+            <p class="section-subtitle">See our teaching style in action</p>
+        </div>
+
+        <div class="videos-grid">
+
+            <!-- Vocals Video -->
+            <div class="video-card glass-card animate-on-scroll">
+                <!--<div class="video-thumb-link" onclick="playVideo(this, 'u3-OsFD3d9o')">-->
+                <div class="video-thumb-link" data-video="u3-OsFD3d9o"></div>
+                    <div class="video-wrapper">
+                        <img src="https://img.youtube.com/vi/u3-OsFD3d9o/hqdefault.jpg" class="video-thumbnail">
+
+                        <div class="video-play-btn">▶</div>
+                    </div>
+                </div>
+
+                <div class="video-info">
+                    <h3 class="video-title">🎤 Vocal Demonstration</h3>
+                    <p class="video-caption">
+                        Experience our vocal training methodology — from breath control to expressive performance.
+                    </p>
+                </div>
+            </div>
+
+            <!-- Guitar Video -->
+            <div class="video-card glass-card animate-on-scroll">
+                <!--<div class="video-thumb-link" onclick="playVideo(this, 'ThGKXTFo3Fc')">-->
+                <div class="video-thumb-link" data-video="hGKXTFo3Fc"></div>
+                    <div class="video-wrapper">
+                        <img src="https://img.youtube.com/vi/ThGKXTFo3Fc/hqdefault.jpg" class="video-thumbnail">
+
+                        <div class="video-play-btn">▶</div>
+                    </div>
+                </div>
+                
+
+                <div class="video-info">
+                    <h3 class="video-title">🎸 Guitar Demonstration</h3>
+                    <p class="video-caption">
+                        Learn guitar from basics to advanced fingerstyle with our structured approach.
+                    </p>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</section>
     <!-- Contact Section -->
     <section id="contact" class="section contact">
         <div class="container">
