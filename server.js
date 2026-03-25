@@ -12,6 +12,155 @@ const app = express();
 const PORT = process.env.PORT || 3000;
 const FRONTEND_URL = process.env.FRONTEND_URL || '*';
 
+console.log("🚀 Starting server...");
+
+// ================================
+// MIDDLEWARE
+// ================================
+app.use(cors({
+    origin: FRONTEND_URL
+}));
+app.use(express.json());
+
+// ================================
+// DATABASE (NON-BLOCKING)
+// ================================
+mongoose.connect(process.env.MONGO_URI)
+    .then(() => console.log('🗄️ MongoDB connected'))
+    .catch(err => {
+        console.error('❌ DB error (non-blocking):', err.message);
+    });
+
+// ================================
+// RESEND SETUP
+// ================================
+const resend = new Resend(process.env.RESEND_API_KEY);
+
+// ================================
+// ROUTES
+// ================================
+
+// Health check
+app.get('/', (req, res) => {
+    res.send('API running 🚀');
+});
+
+// 🔥 TEST EMAIL ROUTE (CRITICAL)
+app.get('/test-email', async (req, res) => {
+    try {
+        const result = await resend.emails.send({
+            from: "SomaRhythm Academy <noreply@somarythm.co.in>", // HARD-CODED for debugging
+            to: "academysoma318@gmail.com", // HARD-CODED for debugging
+            subject: "Test Email FINAL 🚀",
+            html: "<h2>Email system working!</h2>"
+        });
+
+        console.log("📧 TEST EMAIL RESULT:", result);
+
+        res.send("Test email sent (check logs)");
+    } catch (err) {
+        console.error("❌ TEST EMAIL ERROR:", err);
+        res.status(500).send("Email failed");
+    }
+});
+
+// ================================
+// SCHEMA
+// ================================
+const FormSchema = new mongoose.Schema({
+    type: String,
+    name: String,
+    email: String,
+    phone: String,
+    class: String,
+    data: Object,
+    createdAt: {
+        type: Date,
+        default: Date.now
+    }
+});
+
+const Form = mongoose.model('Form', FormSchema);
+
+// ================================
+// FORM ROUTE
+// ================================
+app.post('/api/form', async (req, res) => {
+    try {
+        const data = req.body;
+
+        if (!data.name || !data.email) {
+            return res.status(400).json({
+                success: false,
+                message: 'Name and Email required'
+            });
+        }
+
+        const classType = data.type || data.class || 'General';
+
+        // SAVE TO DB
+        await Form.create({
+            type: classType,
+            name: data.name,
+            email: data.email,
+            phone: data.phone,
+            class: data.class,
+            data: data
+        });
+
+        // SEND EMAIL
+        const result = await resend.emails.send({
+            from: "SomaRhythm Academy <noreply@somarythm.co.in>",
+            to: "academysoma318@gmail.com",
+            reply_to: data.email,
+            subject: `🎶 ${classType.toUpperCase()} CLASS ENROLLMENT`,
+            html: `
+                <h2>New ${classType} Enrollment</h2>
+                ${Object.entries(data)
+                    .map(([k, v]) => `<p><strong>${k}:</strong> ${v}</p>`)
+                    .join('')}
+            `
+        });
+
+        console.log("📧 FORM EMAIL RESULT:", result);
+        console.log(`📩 Saved + Sent (${classType})`);
+
+        res.json({ success: true });
+
+    } catch (error) {
+        console.error('❌ FORM ERROR:', error);
+
+        res.status(500).json({
+            success: false,
+            message: 'Server error'
+        });
+    }
+});
+
+// ================================
+// SERVER START (RENDER FIX)
+// ================================
+app.listen(PORT, '0.0.0.0', () => {
+    console.log(`🚀 Server running on port ${PORT}`);
+});
+
+
+
+
+/*import express from 'express';
+import cors from 'cors';
+import mongoose from 'mongoose';
+import 'dotenv/config';
+import { Resend } from 'resend';
+
+const app = express();
+
+// ================================
+// CONFIG
+// ================================
+const PORT = process.env.PORT || 3000;
+const FRONTEND_URL = process.env.FRONTEND_URL || '*';
+
 // ================================
 // START LOG
 // ================================
