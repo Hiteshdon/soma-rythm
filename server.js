@@ -219,6 +219,16 @@ app.post('/api/form', async (req, res) => {
 // ================================
 // SERVER START
 // ================================
+
+const result = await resend.emails.send({
+    from: `SomaRhythm Academy <${process.env.EMAIL_FROM}>`,
+    to: process.env.EMAIL_TO,
+    reply_to: data.email,
+    subject: `🎶 ${classType.toUpperCase()} CLASS ENROLLMENT`,
+    html: `...`
+});
+
+console.log("📧 RESEND RESULT:", result);
 console.log("📡 About to start server...");
 
 app.listen(PORT, '0.0.0.0', () => {
