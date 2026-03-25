@@ -221,6 +221,43 @@
                 });
             }
         }
+        
+    function playVideo(element, videoId) {
+
+    // Stop other playing videos
+    document.querySelectorAll(".video-wrapper").forEach(wrapper => {
+        if (wrapper !== element.querySelector(".video-wrapper")) {
+            wrapper.innerHTML = wrapper.dataset.thumbnail || wrapper.innerHTML;
+        }
+    });
+
+    const wrapper = element.querySelector(".video-wrapper");
+
+    // Store thumbnail for reset
+    if (!wrapper.dataset.thumbnail) {
+        wrapper.dataset.thumbnail = wrapper.innerHTML;
+    }
+
+    // Inject iframe
+    wrapper.innerHTML = `
+        <iframe 
+            width="100%" 
+            height="315"
+            src="https://www.youtube.com/embed/${videoId}?autoplay=1&rel=0"
+            frameborder="0"
+            allow="autoplay; encrypted-media"
+            allowfullscreen>
+        </iframe>
+    `;
+    document.addEventListener("DOMContentLoaded", () => {
+    document.querySelectorAll(".video-thumb-link").forEach(el => {
+        el.addEventListener("click", () => {
+            playVideo(el, el.dataset.video);
+        });
+    });
+});
+
+}
 
         function animate() {
             const width = canvas.offsetWidth;
