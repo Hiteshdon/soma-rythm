@@ -134,54 +134,53 @@ app.post('/api/form', async (req, res) => {
   const data = parsed.data;
   const classType = data.type || data.class || 'General';
 
+  
+try {
+  // SAVE TO DB
+  const saved = await Form.create(data);
+  console.log("💾 Saved to DB:", saved._id);
+
+  // EMAIL (separate safe block)
   try {
-    // SAVE TO DB
-    const saved = await Form.create(data);
-    console.log("💾 Saved to DB:", saved._id);
+    const emailResult = await resend.emails.send({
+      from: "SomaRhythm Academy <noreply@somarythm.co.in>",
+      to: "academysoma318@gmail.com",
 
-    // EMAIL
-    try {
-      const emailResult = await resend.emails.send({
-        from: "SomaRhythm Academy <noreply@somarythm.co.in>",
-        to: "academysoma318@gmail.com",
-        subject: `🎶 ${classType.toUpperCase()} CLASS ENROLLMENT`,
-        html: `
-          <h2>New ${classType} Enrollment</h2>
-          <pre>${JSON.stringify(data, null, 2)}</pre>
-        `
-      });
+      // 🔥 TEMP TEST CONTENT
+      subject: "Test Email FINAL 🚀",
+      html: "<h2>Email system working!</h2>"
+    });
 
-      console.log("📧 FORM EMAIL FULL:", JSON.stringify(emailResult, null, 2));
-      console.log("📧 Headers:", emailResult?.headers);
+    console.log("📧 FORM EMAIL FULL:", JSON.stringify(emailResult, null, 2));
+    console.log("📧 Headers:", emailResult?.headers);
 
-      if (emailResult?.error) {
-        console.error("❌ Resend API error:", emailResult.error);
-      }
-
-      if (emailResult?.data?.id) {
-        console.log("✅ Email accepted by Resend");
-        console.log("📧 Email ID:", emailResult.data.id);
-      } else {
-        console.warn("⚠️ Email not confirmed as accepted");
-      }
-
-      console.log("📩 User email input:", data.email);
-
-    } catch (emailErr) {
-      console.error("❌ Email failed HARD:", emailErr);
+    if (emailResult?.error) {
+      console.error("❌ Resend API error:", emailResult.error);
     }
 
-    return res.json({ success: true });
+    if (emailResult?.data?.id) {
+      console.log("✅ Email accepted by Resend");
+      console.log("📧 Email ID:", emailResult.data.id);
+    } else {
+      console.warn("⚠️ Email not confirmed as accepted");
+    }
 
-  } catch (error) {
-    console.error('❌ FORM ERROR:', error);
-
-    return res.status(500).json({
-      success: false,
-      message: 'Server error'
-    });
+  } catch (emailErr) {
+    console.error("❌ Email failed HARD:", emailErr);
   }
-});
+
+  return res.json({ success: true });
+
+} catch (error) {
+  console.error('❌ FORM ERROR:', error);
+
+  return res.status(500).json({
+    success: false,
+    message: 'Server error'
+  });
+}
+
+
 
 // ================================
 // START SERVER (ONLY AFTER DB)
