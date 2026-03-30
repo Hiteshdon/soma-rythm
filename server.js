@@ -18,12 +18,10 @@ const FRONTEND_URL = process.env.FRONTEND_URL || '*';
 // 🔥 ENV CHECK (CRITICAL)
 if (!process.env.MONGO_URI) {
   console.error("❌ MONGO_URI missing");
-  process.exit(1);
 }
 
 if (!process.env.RESEND_API_KEY) {
   console.error("❌ RESEND_API_KEY missing");
-  process.exit(1);
 }
 
 console.log("🚀 Starting server...");
