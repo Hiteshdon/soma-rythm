@@ -1,3 +1,4 @@
+
 import './tracing.js';
 import express from 'express';
 import cors from 'cors';
@@ -8,12 +9,22 @@ import { Resend } from 'resend';
 
 const app = express();
 
-
 // ================================
-// CONFIG
+// CONFIG + ENV VALIDATION
 // ================================
 const PORT = process.env.PORT || 3000;
 const FRONTEND_URL = process.env.FRONTEND_URL || '*';
+
+// 🔥 ENV CHECK (CRITICAL)
+if (!process.env.MONGO_URI) {
+  console.error("❌ MONGO_URI missing");
+  process.exit(1);
+}
+
+if (!process.env.RESEND_API_KEY) {
+  console.error("❌ RESEND_API_KEY missing");
+  process.exit(1);
+}
 
 console.log("🚀 Starting server...");
 
@@ -21,18 +32,24 @@ console.log("🚀 Starting server...");
 // MIDDLEWARE
 // ================================
 app.use(cors({
-  origin: FRONTEND_URL
+  origin: FRONTEND_URL === '*' ? true : FRONTEND_URL
 }));
 app.use(express.json());
 
 // ================================
-// DATABASE (NON-BLOCKING)
+// DATABASE (FAIL-FAST)
 // ================================
-mongoose.connect(process.env.MONGO_URI)
-  .then(() => console.log('🗄️ MongoDB connected'))
-  .catch(err => {
-    console.error('❌ DB error (non-blocking):', err.message);
-  });
+async function connectDB() {
+  try {
+    await mongoose.connect(process.env.MONGO_URI, {
+      serverSelectionTimeoutMS: 5000, // ⏱️ prevents hanging
+    });
+    console.log('🗄️ MongoDB connected');
+  } catch (err) {
+    console.error('❌ DB connection failed:', err);
+    process.exit(1);
+  }
+}
 
 // ================================
 // RESEND SETUP
@@ -59,8 +76,8 @@ app.get('/test-email', async (req, res) => {
     });
 
     console.log("📧 TEST EMAIL RESULT:", result);
-
     res.send("Test email sent (check logs)");
+
   } catch (err) {
     console.error("❌ TEST EMAIL ERROR:", err);
     res.status(500).send("Email failed");
@@ -120,23 +137,27 @@ app.post('/api/form', async (req, res) => {
     const saved = await Form.create(data);
     console.log("💾 Saved to DB:", saved._id);
 
-    // SEND EMAIL
+    // ⏱️ EMAIL TIMEOUT WRAPPER
+    const emailPromise = resend.emails.send({
+      from: "SomaRhythm Academy <noreply@somarythm.co.in>",
+      to: "academysoma318@gmail.com",
+      reply_to: data.email,
+      subject: `🎶 ${classType.toUpperCase()} CLASS ENROLLMENT`,
+      html: `
+        <h2>New ${classType} Enrollment</h2>
+        ${Object.entries(data)
+          .map(([k, v]) => `<p><strong>${k}:</strong> ${v}</p>`)
+          .join('')}
+      `
+    });
+
+    const timeoutPromise = new Promise((_, reject) =>
+      setTimeout(() => reject(new Error("Email timeout")), 5000)
+    );
+
     try {
-      const emailResult = await resend.emails.send({
-        from: "SomaRhythm Academy <noreply@somarythm.co.in>",
-        to: "academysoma318@gmail.com",
-        reply_to: data.email,
-        subject: `🎶 ${classType.toUpperCase()} CLASS ENROLLMENT`,
-        html: `
-          <h2>New ${classType} Enrollment</h2>
-          ${Object.entries(data)
-            .map(([k, v]) => `<p><strong>${k}:</strong> ${v}</p>`)
-            .join('')}
-        `
-      });
-
+      const emailResult = await Promise.race([emailPromise, timeoutPromise]);
       console.log("📧 FORM EMAIL RESULT:", emailResult);
-
     } catch (emailErr) {
       console.error("❌ Email failed:", emailErr);
     }
@@ -154,9 +175,15 @@ app.post('/api/form', async (req, res) => {
 });
 
 // ================================
-// SERVER START
+// START SERVER (ONLY AFTER DB)
 // ================================
-app.listen(PORT, '0.0.0.0', () => {
-  console.log(`🚀 Server running on port ${PORT}`);
-});
+async function startServer() {
+  await connectDB();
 
+  app.listen(PORT, '0.0.0.0', () => {
+    console.log(`🚀 Server running on port ${PORT}`);
+  });
+}
+
+startServer();
+```
