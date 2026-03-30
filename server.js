@@ -1,3 +1,4 @@
+
 import './tracing.js';
 import express from 'express';
 import cors from 'cors';
@@ -14,13 +15,15 @@ const app = express();
 const PORT = process.env.PORT || 3000;
 const FRONTEND_URL = process.env.FRONTEND_URL || '*';
 
-// 🔥 ENV CHECK (CRITICAL)
+// 🔥 ENV CHECK (CRITICAL - FIXED)
 if (!process.env.MONGO_URI) {
   console.error("❌ MONGO_URI missing");
+  process.exit(1);
 }
 
 if (!process.env.RESEND_API_KEY) {
   console.error("❌ RESEND_API_KEY missing");
+  process.exit(1);
 }
 
 console.log("🚀 Starting server...");
@@ -39,7 +42,7 @@ app.use(express.json());
 async function connectDB() {
   try {
     await mongoose.connect(process.env.MONGO_URI, {
-      serverSelectionTimeoutMS: 5000, // ⏱️ prevents hanging
+      serverSelectionTimeoutMS: 5000,
     });
     console.log('🗄️ MongoDB connected');
   } catch (err) {
@@ -73,6 +76,8 @@ app.get('/test-email', async (req, res) => {
     });
 
     console.log("📧 TEST EMAIL RESULT:", result);
+    console.log("📧 Headers:", result?.headers);
+
     res.send("Test email sent (check logs)");
 
   } catch (err) {
@@ -134,29 +139,36 @@ app.post('/api/form', async (req, res) => {
     const saved = await Form.create(data);
     console.log("💾 Saved to DB:", saved._id);
 
-    // ⏱️ EMAIL TIMEOUT WRAPPER
-    const emailPromise = resend.emails.send({
-      from: "SomaRhythm Academy <noreply@somarythm.co.in>",
-      to: "academysoma318@gmail.com",
-      reply_to: data.email,
-      subject: `🎶 ${classType.toUpperCase()} CLASS ENROLLMENT`,
-      html: `
-        <h2>New ${classType} Enrollment</h2>
-        ${Object.entries(data)
-          .map(([k, v]) => `<p><strong>${k}:</strong> ${v}</p>`)
-          .join('')}
-      `
-    });
-
-    const timeoutPromise = new Promise((_, reject) =>
-      setTimeout(() => reject(new Error("Email timeout")), 5000)
-    );
-
+    // EMAIL
     try {
-      const emailResult = await Promise.race([emailPromise, timeoutPromise]);
-      console.log("📧 EMAIL DEBUG FULL:", JSON.stringify(emailResult, null, 2));
+      const emailResult = await resend.emails.send({
+        from: "SomaRhythm Academy <noreply@somarythm.co.in>",
+        to: "academysoma318@gmail.com",
+        subject: `🎶 ${classType.toUpperCase()} CLASS ENROLLMENT`,
+        html: `
+          <h2>New ${classType} Enrollment</h2>
+          <pre>${JSON.stringify(data, null, 2)}</pre>
+        `
+      });
+
+      console.log("📧 FORM EMAIL FULL:", JSON.stringify(emailResult, null, 2));
+      console.log("📧 Headers:", emailResult?.headers);
+
+      if (emailResult?.error) {
+        console.error("❌ Resend API error:", emailResult.error);
+      }
+
+      if (emailResult?.data?.id) {
+        console.log("✅ Email accepted by Resend");
+        console.log("📧 Email ID:", emailResult.data.id);
+      } else {
+        console.warn("⚠️ Email not confirmed as accepted");
+      }
+
+      console.log("📩 User email input:", data.email);
+
     } catch (emailErr) {
-      console.error("❌ Email failed:", emailErr);
+      console.error("❌ Email failed HARD:", emailErr);
     }
 
     return res.json({ success: true });
@@ -183,3 +195,4 @@ async function startServer() {
 }
 
 startServer();
+
