@@ -1,13 +1,14 @@
-require('./tracing');
+require('./tracing.js');
 
 import express from 'express';
 import cors from 'cors';
 import mongoose from 'mongoose';
+import { z } from 'zod';
 import 'dotenv/config';
 import { Resend } from 'resend';
 
 const app = express();
-const { z } = require('zod');
+
 
 // ================================
 // CONFIG
