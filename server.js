@@ -155,7 +155,7 @@ app.post('/api/form', async (req, res) => {
 
     try {
       const emailResult = await Promise.race([emailPromise, timeoutPromise]);
-      console.log("📧 FORM EMAIL RESULT:", emailResult);
+      console.log("📧 EMAIL DEBUG FULL:", JSON.stringify(emailResult, null, 2));
     } catch (emailErr) {
       console.error("❌ Email failed:", emailErr);
     }
