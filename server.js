@@ -119,11 +119,11 @@ const Form = mongoose.model('Form', FormSchema);
 // ================================
 // FORM ROUTE
 // ================================
+
 app.post('/api/form', async (req, res) => {
 
   console.log("📩 Incoming request:", req.body);
 
-  // VALIDATION
   const parsed = formSchema.safeParse(req.body);
 
   if (!parsed.success) {
@@ -134,56 +134,39 @@ app.post('/api/form', async (req, res) => {
   const data = parsed.data;
   const classType = data.type || data.class || 'General';
 
-  
-try {
-  // SAVE TO DB
-  const saved = await Form.create(data);
-  console.log("💾 Saved to DB:", saved._id);
-
-  // EMAIL (separate safe block)
   try {
-    const emailResult = await resend.emails.send({
-      from: "SomaRhythm Academy <noreply@somarythm.co.in>",
-      to: "academysoma318@gmail.com",
+    const saved = await Form.create(data);
+    console.log("💾 Saved to DB:", saved._id);
 
-      // 🔥 TEMP TEST CONTENT
-      subject: "Test Email FINAL 🚀",
-      html: "<h2>Email system working!</h2>"
+    try {
+      const emailResult = await resend.emails.send({
+        from: "SomaRhythm Academy <noreply@somarythm.co.in>",
+        to: "academysoma318@gmail.com",
+        subject: "Test Email FINAL 🚀",
+        html: "<h2>Email system working!</h2>"
+      });
+
+      console.log("📧 FORM EMAIL FULL:", JSON.stringify(emailResult, null, 2));
+      console.log("📧 Headers:", emailResult?.headers);
+
+    } catch (emailErr) {
+      console.error("❌ Email failed HARD:", emailErr);
+    }
+
+    return res.json({ success: true });
+
+  } catch (error) {
+    console.error('❌ FORM ERROR:', error);
+
+    return res.status(500).json({
+      success: false,
+      message: 'Server error'
     });
-
-    console.log("📧 FORM EMAIL FULL:", JSON.stringify(emailResult, null, 2));
-    console.log("📧 Headers:", emailResult?.headers);
-
-    if (emailResult?.error) {
-      console.error("❌ Resend API error:", emailResult.error);
-    }
-
-    if (emailResult?.data?.id) {
-      console.log("✅ Email accepted by Resend");
-      console.log("📧 Email ID:", emailResult.data.id);
-    } else {
-      console.warn("⚠️ Email not confirmed as accepted");
-    }
-
-  } catch (emailErr) {
-    console.error("❌ Email failed HARD:", emailErr);
   }
-
-  return res.json({ success: true });
-
-} catch (error) {
-  console.error('❌ FORM ERROR:', error);
-
-  return res.status(500).json({
-    success: false,
-    message: 'Server error'
-  });
-}
-
-
+}); // ✅ ROUTE CLOSED
 
 // ================================
-// START SERVER (ONLY AFTER DB)
+// START SERVER
 // ================================
 async function startServer() {
   await connectDB();
