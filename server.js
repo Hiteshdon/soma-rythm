@@ -140,10 +140,9 @@ app.post('/api/form', async (req, res) => {
 
     try {
       const emailResult = await resend.emails.send({
-        from: "SomaRhythm Academy <noreply@somarythm.co.in>",
-        to: "academysoma318@gmail.com",
-        subject: "Test Email FINAL 🚀",
-        html: "<h2>Email system working!</h2>"
+        subject: `Form submission ${Date.now()}`,
+        html: `<h2>New form from ${data.name}</h2><p>${data.email}</p>`,
+        to: "YOUR_PERSONAL_EMAIL@gmail.com"
       });
 
       console.log("📧 FORM EMAIL FULL:", JSON.stringify(emailResult, null, 2));
