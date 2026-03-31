@@ -466,12 +466,12 @@
         });
     }
 
-    function submitForm(form, type) {
+    async function submitForm(form, type) {
 
-        const submitBtn = form.querySelector('button[type="submit"]');
+    const submitBtn = form.querySelector('button[type="submit"]');
 
-        submitBtn.classList.add('loading');
-        submitBtn.disabled = true;
+    submitBtn.classList.add('loading');
+    submitBtn.disabled = true;
 
     try {
         const formData = new FormData(form);
@@ -484,20 +484,20 @@
             type: type
         };
 
-        const response = fetch('https://soma-rythm-2.onrender.com/api/form', {
+        const response = await fetch('https://soma-rythm-2.onrender.com/api/form', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
             },
             body: JSON.stringify(data)
-        })
-        const result = response.json();
+        });
+
+        const result = await response.json();
 
         if (!response.ok) {
             throw new Error(result?.error || 'Something went wrong');
         }
 
-        // ✅ SUCCESS FLOW
         form.reset();
         clearFormErrors(form);
 
