@@ -3,153 +3,7 @@
  * Handles all interactivity, animations, and form validation
  */
 
-
-
 (function() {
-    'use strict';
-
-    // ================================
-    // DOM Elements
-    // ================================
-    const elements = {
-        navbar: document.querySelector('.navbar'),
-        navToggle: document.querySelector('.nav-toggle'),
-        navMenu: document.querySelector('.nav-menu'),
-        navLinks: document.querySelectorAll('.nav-link'),
-        sections: document.querySelectorAll('section[id]'),
-        animatedElements: document.querySelectorAll('.animate-on-scroll'),
-        floatingNotesContainer: document.querySelector('.floating-notes'),
-        equalizerCanvas: document.getElementById('equalizer-canvas'),
-        backToTopBtn: document.getElementById('back-to-top'),
-        enrollModal: document.getElementById('enroll-modal'),
-        enrollBtns: document.querySelectorAll('.enroll-btn'),
-        modalClose: document.querySelector('.modal-close'),
-        modalBackdrop: document.querySelector('.modal-backdrop'),
-        modalClassName: document.getElementById('modal-class-name'),
-        enrollClassSelect: document.getElementById('enroll-class'),
-        enrollForm: document.getElementById('enroll-form'),
-        contactForm: document.getElementById('contact-form'),
-        toast: document.getElementById('toast'),
-        toastMessage: document.querySelector('.toast-message')
-    };
-
-    // ================================
-    // INIT
-    // ================================
-    function init() {
-        initForms();
-    }
-
-    // ================================
-    // FORM HANDLING (FINAL FIXED)
-    // ================================
-    function initForms() {
-
-        // Enroll form
-        elements.enrollForm?.addEventListener('submit', (e) => {
-            e.preventDefault();
-            submitForm(elements.enrollForm, elements.enrollClassSelect?.value || 'enrollment');
-        });
-
-        // Contact form
-        elements.contactForm?.addEventListener('submit', (e) => {
-            e.preventDefault();
-            submitForm(elements.contactForm, 'contact');
-        });
-
-        // Class select update
-        elements.enrollClassSelect?.addEventListener('change', (e) => {
-            const selectedClass = e.target.value;
-            if (selectedClass && elements.modalClassName) {
-                elements.modalClassName.textContent = selectedClass + ' Classes';
-            }
-        });
-    }
-
-    // ================================
-    // SUBMIT FORM (WORKING)
-    // ================================
-    async function submitForm(form, type) {
-
-        console.log("🚀 submitForm triggered");
-
-        const submitBtn = form?.querySelector('button[type="submit"]');
-
-        if (submitBtn) {
-            submitBtn.classList.add('loading');
-            submitBtn.disabled = true;
-        }
-
-        const formData = new FormData(form);
-        const data = Object.fromEntries(formData.entries());
-
-        console.log("📡 Sending:", data);
-
-        try {
-            const response = await fetch('https://soma-rythm-2.onrender.com/api/form', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    type: type,
-                    ...data
-                })
-            });
-
-            const result = await response.json();
-
-            console.log("📥 Response:", result);
-
-            if (!response.ok) throw new Error(result.message || 'Request failed');
-
-            form.reset();
-            showToast("✅ Submitted successfully!");
-
-        } catch (error) {
-            console.error("❌ Error:", error);
-            showToast("❌ Something went wrong");
-        } finally {
-            if (submitBtn) {
-                submitBtn.classList.remove('loading');
-                submitBtn.disabled = false;
-            }
-        }
-    }
-
-    // ================================
-    // TOAST
-    // ================================
-    function showToast(message) {
-        if (!elements.toast) return;
-
-        elements.toastMessage.textContent = message;
-        elements.toast.hidden = false;
-
-        requestAnimationFrame(() => {
-            elements.toast.classList.add('active');
-        });
-
-        setTimeout(() => {
-            elements.toast.classList.remove('active');
-            setTimeout(() => {
-                elements.toast.hidden = true;
-            }, 300);
-        }, 3000);
-    }
-
-    // ================================
-    // START
-    // ================================
-    if (document.readyState === 'loading') {
-        document.addEventListener('DOMContentLoaded', init);
-    } else {
-        init();
-    }
-
-})();
-
-
-
-/*(function() {
     'use strict';
 
     // ================================
@@ -367,43 +221,6 @@
                 });
             }
         }
-        
-    function playVideo(element, videoId) {
-
-    // Stop other playing videos
-    document.querySelectorAll(".video-wrapper").forEach(wrapper => {
-        if (wrapper !== element.querySelector(".video-wrapper")) {
-            wrapper.innerHTML = wrapper.dataset.thumbnail || wrapper.innerHTML;
-        }
-    });
-
-    const wrapper = element.querySelector(".video-wrapper");
-
-    // Store thumbnail for reset
-    if (!wrapper.dataset.thumbnail) {
-        wrapper.dataset.thumbnail = wrapper.innerHTML;
-    }
-
-    // Inject iframe
-    wrapper.innerHTML = `
-        <iframe 
-            width="100%" 
-            height="315"
-            src="https://www.youtube.com/embed/${videoId}?autoplay=1&rel=0"
-            frameborder="0"
-            allow="autoplay; encrypted-media"
-            allowfullscreen>
-        </iframe>
-    `;
-    document.addEventListener("DOMContentLoaded", () => {
-    document.querySelectorAll(".video-thumb-link").forEach(el => {
-        el.addEventListener("click", () => {
-            playVideo(el, el.dataset.video);
-        });
-    });
-});
-
-}
 
         function animate() {
             const width = canvas.offsetWidth;
@@ -552,96 +369,7 @@
             }
         }
     }
-     
 
-function initForms() {
-    // Enroll form
-    elements.enrollForm?.addEventListener('submit', (e) => {
-        e.preventDefault();
-        if (validateForm(elements.enrollForm)) {
-            submitForm(elements.enrollForm, elements.enrollClassSelect.value);
-        }
-    });
-
-    elements.enrollClassSelect?.addEventListener('change', (e) => {
-        const selectedClass = e.target.value;
-
-        if (selectedClass) {
-            elements.modalClassName.textContent = selectedClass + ' Classes';
-        }
-    });
-
-    // Contact form
-    elements.contactForm?.addEventListener('submit', (e) => {
-        e.preventDefault();
-        if (validateForm(elements.contactForm)) {
-            submitForm(elements.contactForm, 'contact');
-        }
-    });
-
-    // Real-time validation on blur
-    document.querySelectorAll('input, select, textarea').forEach(field => {
-        field.addEventListener('blur', () => validateField(field));
-        field.addEventListener('input', () => {
-            if (field.closest('.form-group').classList.contains('error')) {
-                validateField(field);
-            }
-        });
-    });
-}
-
-async function submitForm(form, type) {
-    const submitBtn = form.querySelector('button[type="submit"]');
-    
-    // Show loading state
-    submitBtn.classList.add('loading');
-    submitBtn.disabled = true;
-
-    // Collect form data
-    const formData = new FormData(form);
-    const data = Object.fromEntries(formData.entries());
-
-    try {
-        const response = await fetch('https://soma-rythm-2.onrender.com/api/form', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({
-                type: type,
-                ...data
-            })
-        });
-
-        const result = await response.json();
-
-        if (!response.ok) throw new Error(result.message || 'Request failed');
-
-        // ✅ SUCCESS
-        form.reset();
-        clearFormErrors(form);
-
-        if (type === 'enrollment') {
-            closeModal();
-            showToast('Enrollment submitted successfully! We\'ll contact you soon.');
-        } else {
-            showToast('Message sent successfully! We\'ll get back to you soon.');
-        }
-
-    } catch (error) {
-        console.error(error);
-        showToast('Something went wrong. Please try again.');
-    } finally {
-        // Remove loading state
-        submitBtn.classList.remove('loading');
-        submitBtn.disabled = false;
-    }
-}
-
-
-   
-});
-    /*
     // ================================
     // Form Validation
     // ================================
@@ -650,26 +378,14 @@ async function submitForm(form, type) {
         elements.enrollForm?.addEventListener('submit', (e) => {
             e.preventDefault();
             if (validateForm(elements.enrollForm)) {
-                 e.preventDefault();
-                submitForm(elements.enrollForm, elements.enrollClassSelect.value);
+                submitForm(elements.enrollForm, 'enrollment');
             }
         });
-
-        elements.enrollClassSelect?.addEventListener('change', (e) => {
-        const selectedClass = e.target.value;
-
-        if (selectedClass) {
-            elements.modalClassName.textContent = selectedClass + ' Classes';
-        }
-    });
-
-    
 
         // Contact form
         elements.contactForm?.addEventListener('submit', (e) => {
             e.preventDefault();
             if (validateForm(elements.contactForm)) {
-                 e.preventDefault();
                 submitForm(elements.contactForm, 'contact');
             }
         });
@@ -750,53 +466,56 @@ async function submitForm(form, type) {
         });
     }
 
-    
-    async function submitForm(form, type) {
-    const submitBtn = form.querySelector('button[type="submit"]');
-    
-    // Show loading state
-    submitBtn.classList.add('loading');
-    submitBtn.disabled = true;
+    function submitForm(form, type) {
 
-    // Collect form data
-    const formData = new FormData(form);
-    const data = Object.fromEntries(formData.entries());
+        const submitBtn = form.querySelector('button[type="submit"]');
+
+        submitBtn.classList.add('loading');
+        submitBtn.disabled = true;
 
     try {
-        const response = await fetch('https://soma-rythm-2.onrender.com/api/form', {
-    method: 'POST',
-    headers: {
-        'Content-Type': 'application/json'
-    },
-    body: JSON.stringify({
-        type: type,
-        ...data
-    })
-});
-        const result = await response.json();
+        const formData = new FormData(form);
 
-        if (!response.ok) throw new Error(result.message || 'Request failed');
+        const data = {
+            name: formData.get('name'),
+            email: formData.get('email'),
+            phone: formData.get('phone'),
+            message: formData.get('message'),
+            type: type
+        };
 
-        // ✅ SUCCESS
+        const response = fetch('https://soma-rythm-2.onrender.com/api/form', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(data)
+        })
+        const result = response.json();
+
+        if (!response.ok) {
+            throw new Error(result?.error || 'Something went wrong');
+        }
+
+        // ✅ SUCCESS FLOW
         form.reset();
         clearFormErrors(form);
 
         if (type === 'enrollment') {
             closeModal();
-            showToast('Enrollment submitted successfully! We\'ll contact you soon.');
+            showToast('Enrollment submitted successfully!');
         } else {
-            showToast('Message sent successfully! We\'ll get back to you soon.');
+            showToast('Message sent successfully!');
         }
 
     } catch (error) {
-        console.error(error);
-        showToast('Something went wrong. Please try again.');
+        console.error("❌ FRONTEND ERROR:", error);
+        showToast('Submission failed. Try again.');
     } finally {
-        // Remove loading state
         submitBtn.classList.remove('loading');
         submitBtn.disabled = false;
     }
-}
+    }
 
     // ================================
     // Toast Notifications
@@ -898,4 +617,3 @@ async function submitForm(form, type) {
     }
 
 })();
-*/
