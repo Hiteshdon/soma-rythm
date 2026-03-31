@@ -12,7 +12,7 @@ const app = express();
 // ================================
 // CONFIG + ENV VALIDATION
 // ================================
-const PORT = process.env.PORT || 3000;
+const PORT = process.env.PORT;
 const FRONTEND_URL = process.env.FRONTEND_URL || '*';
 
 // 🔥 ENV CHECK (CRITICAL - FIXED)
