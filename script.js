@@ -415,7 +415,7 @@
         elements.enrollForm?.addEventListener('submit', (e) => {
             e.preventDefault();
             if (validateForm(elements.enrollForm)) {
-
+                 e.preventDefault();
                 submitForm(elements.enrollForm, elements.enrollClassSelect.value);
             }
         });
@@ -434,6 +434,7 @@
         elements.contactForm?.addEventListener('submit', (e) => {
             e.preventDefault();
             if (validateForm(elements.contactForm)) {
+                 e.preventDefault();
                 submitForm(elements.contactForm, 'contact');
             }
         });
