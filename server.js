@@ -122,6 +122,9 @@ const Form = mongoose.model('Form', FormSchema);
 
 app.post('/api/form', async (req, res) => {
 
+  
+  console.log("🚨 ROUTE HIT");
+
   console.log("📩 Incoming request:", req.body);
 
   const parsed = formSchema.safeParse(req.body);
@@ -139,6 +142,7 @@ app.post('/api/form', async (req, res) => {
     console.log("💾 Saved to DB:", saved._id);
 
     try {
+      console.log("🚨 EMAIL BLOCK REACHED");
       const emailResult = await resend.emails.send({
           from:"noreply@somarythm.co.in",  // ✅ REQUIRED
           to: "academysoma318@gmail.com",
