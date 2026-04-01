@@ -121,7 +121,7 @@ const Form = mongoose.model('Form', FormSchema);
 
 app.post('/api/form', async (req, res) => {
 
-  app.post('/api/form', async (req, res) => {
+
   console.log("🚨 ROUTE HIT");
   console.log("📩 Incoming request:", req.body);
 
@@ -161,8 +161,6 @@ app.post('/api/form', async (req, res) => {
   }
 });
 
-  
-}); 
 // ✅ ROUTE CLOSED
 
 // ================================
