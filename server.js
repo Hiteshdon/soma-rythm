@@ -1,4 +1,3 @@
-
 import './tracing.js';
 import express from 'express';
 import cors from 'cors';
@@ -122,53 +121,49 @@ const Form = mongoose.model('Form', FormSchema);
 
 app.post('/api/form', async (req, res) => {
 
-  
+  app.post('/api/form', async (req, res) => {
   console.log("🚨 ROUTE HIT");
-
   console.log("📩 Incoming request:", req.body);
 
   const parsed = formSchema.safeParse(req.body);
-
   if (!parsed.success) {
     console.error("❌ Validation failed:", parsed.error);
     return res.status(400).json({ error: "Invalid input" });
   }
 
   const data = parsed.data;
-  const classType = data.type || data.class || 'General';
 
   try {
     const saved = await Form.create(data);
     console.log("💾 Saved to DB:", saved._id);
 
+    // EMAIL SEND BLOCK
     try {
       console.log("🚨 EMAIL BLOCK REACHED");
       const emailResult = await resend.emails.send({
-          from:"noreply@somarythm.co.in",  // ✅ REQUIRED
-          to: "academysoma318@gmail.com",
-          subject: `Form submission ${Date.now()}`,
-          html: `<h2>New form from ${data.name}</h2><p>${data.email}</p>`
-        
+        from: "SomaRhythm Academy <noreply@somarythm.co.in>", // ✅ use verified sender format
+        to: "academysoma318@gmail.com",
+        subject: `Form submission ${Date.now()}`,
+        html: `<h2>New form from ${data.name}</h2><p>${data.email}</p>`
       });
 
       console.log("📧 FORM EMAIL FULL:", JSON.stringify(emailResult, null, 2));
-      console.log("📧 Headers:", emailResult?.headers);
+      return res.json({ success: true });
 
     } catch (emailErr) {
       console.error("❌ Email failed HARD:", emailErr);
+      return res.status(500).json({ success: false, error: "Email delivery failed" });
     }
 
-    return res.json({ success: true });
-
   } catch (error) {
-    console.error('❌ FORM ERROR:', error);
-
-    return res.status(500).json({
-      success: false,
-      message: 'Server error'
-    });
+    console.error("❌ FORM ERROR:", error);
+    return res.status(500).json({ success: false, message: "Server error" });
   }
-}); // ✅ ROUTE CLOSED
+});
+
+  
+}); 
+// ✅ ROUTE CLOSED
 
 // ================================
 // START SERVER
@@ -182,4 +177,3 @@ async function startServer() {
 }
 
 startServer();
-
