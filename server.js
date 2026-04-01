@@ -88,7 +88,7 @@ app.get('/test-email', async (req, res) => {
 // ================================
 // VALIDATION SCHEMA (ZOD)
 // ================================
-const formSchema = z.object({
+const formschema = z.object({
   name: z.string().min(1),
   email: z.string().email(),
   phone: z.string().optional(),
@@ -113,7 +113,6 @@ const formSchema = z.object({
   }
 });*/
 
-const Form = mongoose.model('Form', formSchema);
 
 // ================================
 // FORM ROUTE
@@ -125,7 +124,7 @@ app.post('/api/form', async (req, res) => {
   console.log("🚨 ROUTE HIT");
   console.log("📩 Incoming request:", req.body);
 
-  const parsed = Form.safeParse(req.body);
+  const parsed = formschema.safeParse(req.body);
   if (!parsed.success) {
     console.error("❌ Validation failed:", parsed.error);
     return res.status(400).json({ error: "Invalid input" });
