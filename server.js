@@ -100,7 +100,7 @@ const formschema = z.object({
 // ================================
 // DATABASE SCHEMA
 // ================================
-/*const FormSchema = new mongoose.Schema({
+const FormSchema = new mongoose.Schema({
   name: String,
   email: String,
   phone: String,
@@ -111,7 +111,8 @@ const formschema = z.object({
     type: Date,
     default: Date.now
   }
-});*/
+});
+const Form = mongoose.model("Form", FormSchema);
 
 
 // ================================
