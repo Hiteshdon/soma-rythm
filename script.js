@@ -5,6 +5,16 @@
 console.log("🚀 SCRIPT LOADED");
 (function() {
     'use strict';
+    const host = window.location.hostname;
+    const isLocalHost =
+        ['localhost', '127.0.0.1', '::1'].includes(host) ||
+        host.startsWith('192.168.') ||
+        host.startsWith('10.') ||
+        /^172\.(1[6-9]|2\d|3[0-1])\./.test(host);
+    const API_BASE_URL = (window.API_BASE_URL ||
+        (window.location.protocol === 'file:' || isLocalHost ? 'http://localhost:5000' : ''))
+        .trim()
+        .replace(/\/$/, '');
 
     // ================================
     // DOM Elements
@@ -484,7 +494,7 @@ console.log("🚀 SCRIPT LOADED");
             type: type
         };
 
-        const response = await fetch('https://soma-rythm-2.onrender.com/api/form', {
+        const response = await fetch(`${API_BASE_URL}/api/form`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
