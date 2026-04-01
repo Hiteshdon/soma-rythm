@@ -13,7 +13,7 @@ const app = express();
 // ================================
 const PORT = process.env.PORT;
 const FRONTEND_URL = process.env.FRONTEND_URL || '*';
-
+//const FRONTEND_URL = 'https://somarythm.co.in'|| '*';  
 // 🔥 ENV CHECK (CRITICAL - FIXED)
 if (!process.env.MONGO_URI) {
   console.error("❌ MONGO_URI missing");
@@ -88,19 +88,19 @@ app.get('/test-email', async (req, res) => {
 // ================================
 // VALIDATION SCHEMA (ZOD)
 // ================================
-/*const formSchema = z.object({
+const formSchema = z.object({
   name: z.string().min(1),
   email: z.string().email(),
   phone: z.string().optional(),
   message: z.string().optional(),
   type: z.string().optional(),
   class: z.string().optional(),
-}); */
+}); 
 
 // ================================
 // DATABASE SCHEMA
 // ================================
-const FormSchema = new mongoose.Schema({
+/*const FormSchema = new mongoose.Schema({
   name: String,
   email: String,
   phone: String,
@@ -111,9 +111,9 @@ const FormSchema = new mongoose.Schema({
     type: Date,
     default: Date.now
   }
-});
+});*/
 
-const Form = mongoose.model('Form', FormSchema);
+const Form = mongoose.model('Form', formSchema);
 
 // ================================
 // FORM ROUTE
