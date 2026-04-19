@@ -466,6 +466,10 @@ console.log("🚀 SCRIPT LOADED");
         });
     }
 
+    const apiBaseUrl = ['localhost', '127.0.0.1'].includes(window.location.hostname)
+        ? 'http://localhost:3000'
+        : 'https://soma-rythm-2.onrender.com';
+
     async function submitForm(form, type) {
 
     const submitBtn = form.querySelector('button[type="submit"]');
@@ -484,7 +488,7 @@ console.log("🚀 SCRIPT LOADED");
             type: type
         };
 
-        const response = await fetch('https://soma-rythm-2.onrender.com/api/form', {
+        const response = await fetch(`${apiBaseUrl}/api/form`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
@@ -492,18 +496,20 @@ console.log("🚀 SCRIPT LOADED");
             body: JSON.stringify(data)
         });
 
-        const result = await response.json();
-        try{
-        if (!response.ok) {
-            throw new Error(result?.error || 'Something went wrong');
+        let result = null;
+        try {
+            result = await response.json();
+        } catch {
+            result = null;
         }
-    }
-    catch(err)
-    {
-        showToast('Submission failed. Try again.');
 
-    
-}
+        if (!response.ok) {
+            throw new Error(result?.error || result?.message || 'Submission failed. Try again.');
+        }
+
+        if (result?.success === false) {
+            throw new Error(result?.error || result?.message || 'Submission failed. Try again.');
+        }
 
         form.reset();
         clearFormErrors(form);
@@ -517,7 +523,7 @@ console.log("🚀 SCRIPT LOADED");
 
     } catch (error) {
         console.error("❌ FRONTEND ERROR:", error);
-        showToast('Submission failed. Try again.');
+        showToast(error instanceof Error ? error.message : 'Submission failed. Try again.');
     } finally {
         submitBtn.classList.remove('loading');
         submitBtn.disabled = false;

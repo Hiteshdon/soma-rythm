@@ -11,17 +11,23 @@ const app = express();
 // ================================
 // CONFIG + ENV VALIDATION
 // ================================
-const PORT = process.env.PORT;
+const PORT = Number(process.env.PORT) || 3000;
 const FRONTEND_URL = process.env.FRONTEND_URL || '*';
+const EMAIL_FROM = process.env.EMAIL_FROM;
+const EMAIL_TO = process.env.EMAIL_TO;
+const allowedOrigins = new Set(
+  [
+    FRONTEND_URL,
+    'http://localhost:5500',
+    'http://127.0.0.1:5500'
+  ].filter((origin) => origin && origin !== '*')
+);
 //const FRONTEND_URL = 'https://somarythm.co.in'|| '*';  
-// 🔥 ENV CHECK (CRITICAL - FIXED)
-if (!process.env.MONGO_URI) {
-  console.error("❌ MONGO_URI missing");
-  process.exit(1);
-}
+const requiredEnvVars = ['MONGO_URI', 'RESEND_API_KEY', 'EMAIL_FROM', 'EMAIL_TO'];
+const missingEnvVars = requiredEnvVars.filter((key) => !process.env[key]);
 
-if (!process.env.RESEND_API_KEY) {
-  console.error("❌ RESEND_API_KEY missing");
+if (missingEnvVars.length > 0) {
+  console.error(`❌ Missing required env vars: ${missingEnvVars.join(', ')}`);
   process.exit(1);
 }
 
@@ -31,7 +37,13 @@ console.log("🚀 Starting server...");
 // MIDDLEWARE
 // ================================
 app.use(cors({
-  origin: FRONTEND_URL === '*' ? true : FRONTEND_URL
+  origin(origin, callback) {
+    if (FRONTEND_URL === '*' || !origin || allowedOrigins.has(origin)) {
+      return callback(null, true);
+    }
+
+    return callback(new Error('Not allowed by CORS'));
+  }
 }));
 app.use(express.json());
 
@@ -55,6 +67,32 @@ async function connectDB() {
 // ================================
 const resend = new Resend(process.env.RESEND_API_KEY);
 
+function escapeHtml(value = '') {
+  return String(value)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+}
+
+async function sendNotificationEmail({ subject, html, replyTo }) {
+  const { data, error } = await resend.emails.send({
+    from: EMAIL_FROM,
+    to: EMAIL_TO,
+    subject,
+    html,
+    ...(replyTo ? { replyTo } : {})
+  });
+
+  if (error) {
+    const message = error.message || error.name || 'Email delivery failed';
+    throw new Error(message);
+  }
+
+  return data;
+}
+
 // ================================
 // ROUTES
 // ================================
@@ -67,21 +105,18 @@ app.get('/', (req, res) => {
 // 🔥 TEST EMAIL ROUTE
 app.get('/test-email', async (req, res) => {
   try {
-    const result = await resend.emails.send({
-      from: "SomaRhythm Academy <noreply@somarythm.co.in>",
-      to: "academysoma318@gmail.com",
+    const result = await sendNotificationEmail({
       subject: "Test Email FINAL 🚀",
       html: "<h2>Email system working!</h2>"
     });
 
     console.log("📧 TEST EMAIL RESULT:", result);
-    console.log("📧 Headers:", result?.headers);
 
-    res.send("Test email sent (check logs)");
+    res.json({ success: true, id: result?.id ?? null });
 
   } catch (err) {
     console.error("❌ TEST EMAIL ERROR:", err);
-    res.status(500).send("Email failed");
+    res.status(502).json({ success: false, error: "Email failed" });
   }
 });
 
@@ -140,19 +175,25 @@ app.post('/api/form', async (req, res) => {
     // EMAIL SEND BLOCK
     try {
       console.log("🚨 EMAIL BLOCK REACHED");
-      const emailResult = await resend.emails.send({
-        from: "SomaRhythm Academy <noreply@somarythm.co.in>", // ✅ use verified sender format
-        to: "academysoma318@gmail.com",
-        subject: `Form submission ${Date.now()}`,
-        html: `<h2>New form from ${data.name}</h2><p>${data.email}</p>`
+      const emailResult = await sendNotificationEmail({
+        subject: `New ${escapeHtml(data.type || 'contact')} form submission`,
+        replyTo: data.email,
+        html: `
+          <h2>New form submission</h2>
+          <p><strong>Name:</strong> ${escapeHtml(data.name)}</p>
+          <p><strong>Email:</strong> ${escapeHtml(data.email)}</p>
+          <p><strong>Phone:</strong> ${escapeHtml(data.phone || 'Not provided')}</p>
+          <p><strong>Type:</strong> ${escapeHtml(data.type || 'contact')}</p>
+          <p><strong>Message:</strong> ${escapeHtml(data.message || 'Not provided')}</p>
+        `
       });
 
       console.log("📧 FORM EMAIL FULL:", JSON.stringify(emailResult, null, 2));
-      return res.json({ success: true });
+      return res.json({ success: true, savedId: saved._id, emailId: emailResult?.id ?? null });
 
     } catch (emailErr) {
       console.error("❌ Email failed HARD:", emailErr);
-      return res.status(500).json({ success: false, error: "Email delivery failed" });
+      return res.status(502).json({ success: false, error: "Form saved but email delivery failed" });
     }
 
   } catch (error) {
