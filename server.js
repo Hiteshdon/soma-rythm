@@ -1,10 +1,10 @@
-import './tracing.js';
-import express from 'express';
 import cors from 'cors';
-import mongoose from 'mongoose';
-import { z } from 'zod';
 import 'dotenv/config';
+import express from 'express';
+import mongoose from 'mongoose';
 import { Resend } from 'resend';
+import { z } from 'zod';
+import './tracing.js';
 
 const app = express();
 
@@ -13,8 +13,29 @@ const app = express();
 // ================================
 const PORT = Number(process.env.PORT) || 3000;
 const FRONTEND_URL = process.env.FRONTEND_URL || '*';
-const EMAIL_FROM = process.env.EMAIL_FROM;
+// Use RESEND_FROM_OVERRIDE when EMAIL_FROM domain is not yet verified in Resend.
+// Set RESEND_FROM_OVERRIDE=onboarding@resend.dev in .env as a temporary workaround.
+const EMAIL_FROM = process.env.RESEND_FROM_OVERRIDE || process.env.EMAIL_FROM;
 const EMAIL_TO = process.env.EMAIL_TO;
+
+function isAllowedLocalOrigin(origin) {
+  try {
+    const { protocol, hostname } = new URL(origin);
+
+    if (!['http:', 'https:'].includes(protocol)) {
+      return false;
+    }
+
+    if (['localhost', '127.0.0.1'].includes(hostname)) {
+      return true;
+    }
+
+    return /^(10\.|192\.168\.|172\.(1[6-9]|2\d|3[0-1])\.)/.test(hostname);
+  } catch {
+    return false;
+  }
+}
+
 const allowedOrigins = new Set(
   [
     FRONTEND_URL,
@@ -38,7 +59,7 @@ console.log("🚀 Starting server...");
 // ================================
 app.use(cors({
   origin(origin, callback) {
-    if (FRONTEND_URL === '*' || !origin || allowedOrigins.has(origin)) {
+    if (FRONTEND_URL === '*' || !origin || allowedOrigins.has(origin) || isAllowedLocalOrigin(origin)) {
       return callback(null, true);
     }
 
@@ -86,8 +107,13 @@ async function sendNotificationEmail({ subject, html, replyTo }) {
   });
 
   if (error) {
+    // Log the full Resend error so the root cause is always visible in server output
+    console.error('❌ Resend error:', JSON.stringify(error, null, 2));
     const message = error.message || error.name || 'Email delivery failed';
-    throw new Error(message);
+    const hint = error.statusCode === 403
+      ? ' (Resend account is still in testing mode or the sender domain is not verified. Verify the sending domain at https://resend.com/domains, or during development send only to the Resend account owner test inbox.)'
+      : '';
+    throw new Error(message + hint);
   }
 
   return data;
@@ -130,7 +156,7 @@ const formschema = z.object({
   message: z.string().optional(),
   type: z.string().optional(),
   class: z.string().optional(),
-}); 
+});
 
 // ================================
 // DATABASE SCHEMA
