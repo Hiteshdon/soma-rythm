@@ -3,7 +3,7 @@
  * Handles all interactivity, animations, and form validation
  */
 console.log("🚀 SCRIPT LOADED");
-(function() {
+(function () {
     'use strict';
 
     // ================================
@@ -180,7 +180,7 @@ console.log("🚀 SCRIPT LOADED");
         const note = document.createElement('span');
         note.className = 'note';
         note.textContent = notes[Math.floor(Math.random() * notes.length)];
-        
+
         // Random positioning and timing
         note.style.left = `${Math.random() * 100}%`;
         note.style.animationDelay = `${Math.random() * 15}s`;
@@ -336,7 +336,7 @@ console.log("🚀 SCRIPT LOADED");
         if (!elements.enrollModal) return;
 
         elements.enrollModal.classList.remove('active');
-        
+
         setTimeout(() => {
             elements.enrollModal.hidden = true;
         }, 300);
@@ -458,7 +458,7 @@ console.log("🚀 SCRIPT LOADED");
 
     function clearFormErrors(form) {
         if (!form) return;
-        
+
         form.querySelectorAll('.form-group').forEach(group => {
             group.classList.remove('error');
             const errorEl = group.querySelector('.error-message');
@@ -466,69 +466,90 @@ console.log("🚀 SCRIPT LOADED");
         });
     }
 
-    const apiBaseUrl = ['localhost', '127.0.0.1'].includes(window.location.hostname)
-        ? 'http://localhost:3000'
-        : 'https://soma-rythm-2.onrender.com';
+    function getApiBaseUrl() {
+        const url = new URL(window.location.href);
+        const queryOverride = url.searchParams.get('apiBaseUrl');
+        const metaOverride = document.querySelector('meta[name="api-base-url"]')?.content?.trim();
+
+        if (queryOverride) {
+            return queryOverride;
+        }
+
+        if (metaOverride) {
+            return metaOverride;
+        }
+
+        const isLocalHost = ['localhost', '127.0.0.1'].includes(window.location.hostname);
+        const isPrivateIp = /^(10\.|192\.168\.|172\.(1[6-9]|2\d|3[0-1])\.)/.test(window.location.hostname);
+
+        if (isLocalHost || isPrivateIp) {
+            return `http://${window.location.hostname}:3000`;
+        }
+
+        return 'https://soma-rythm-2.onrender.com';
+    }
+
+    const apiBaseUrl = getApiBaseUrl();
 
     async function submitForm(form, type) {
 
-    const submitBtn = form.querySelector('button[type="submit"]');
+        const submitBtn = form.querySelector('button[type="submit"]');
 
-    submitBtn.classList.add('loading');
-    submitBtn.disabled = true;
+        submitBtn.classList.add('loading');
+        submitBtn.disabled = true;
 
-    try {
-        const formData = new FormData(form);
-
-        const data = {
-            name: formData.get('name'),
-            email: formData.get('email'),
-            phone: formData.get('phone'),
-            message: formData.get('message'),
-            type: type
-        };
-
-        const response = await fetch(`${apiBaseUrl}/api/form`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify(data)
-        });
-
-        let result = null;
         try {
-            result = await response.json();
-        } catch {
-            result = null;
+            const formData = new FormData(form);
+
+            const data = {
+                name: formData.get('name'),
+                email: formData.get('email'),
+                phone: formData.get('phone'),
+                message: formData.get('message'),
+                type: type
+            };
+
+            const response = await fetch(`${apiBaseUrl}/api/form`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(data)
+            });
+
+            let result = null;
+            try {
+                result = await response.json();
+            } catch {
+                result = null;
+            }
+
+            if (!response.ok) {
+                throw new Error(result?.error || result?.message || 'Submission failed. Try again.');
+            }
+
+            if (result?.success === false) {
+                throw new Error(result?.error || result?.message || 'Submission failed. Try again.');
+            }
+
+            form.reset();
+            clearFormErrors(form);
+
+            if (type === 'enrollment') {
+                closeModal();
+                showToast('Enrollment submitted successfully!');
+            } else {
+                showToast('Message sent successfully!');
+            }
+
+        } catch (error) {
+            console.error("❌ FRONTEND ERROR:", error);
+            showToast(error instanceof Error ? error.message : 'Submission failed. Try again.');
+        } finally {
+            submitBtn.classList.remove('loading');
+            submitBtn.disabled = false;
         }
-
-        if (!response.ok) {
-            throw new Error(result?.error || result?.message || 'Submission failed. Try again.');
-        }
-
-        if (result?.success === false) {
-            throw new Error(result?.error || result?.message || 'Submission failed. Try again.');
-        }
-
-        form.reset();
-        clearFormErrors(form);
-
-        if (type === 'enrollment') {
-            closeModal();
-            showToast('Enrollment submitted successfully!');
-        } else {
-            showToast('Message sent successfully!');
-        }
-
-    } catch (error) {
-        console.error("❌ FRONTEND ERROR:", error);
-        showToast(error instanceof Error ? error.message : 'Submission failed. Try again.');
-    } finally {
-        submitBtn.classList.remove('loading');
-        submitBtn.disabled = false;
-    }
-    console.log("🔥 SUBMIT CALLED");
+        console.log("🔥 SUBMIT CALLED");
     }
 
     // ================================
@@ -559,15 +580,15 @@ console.log("🚀 SCRIPT LOADED");
         elements.copyBtns.forEach(btn => {
             btn.addEventListener('click', async () => {
                 const textToCopy = btn.dataset.copy;
-                
+
                 try {
                     await navigator.clipboard.writeText(textToCopy);
-                    
+
                     // Visual feedback
                     const originalText = btn.querySelector('.copy-icon').textContent;
                     btn.querySelector('.copy-icon').textContent = '✓';
                     btn.classList.add('copied');
-                    
+
                     showToast('Copied to clipboard!', 2000);
 
                     setTimeout(() => {
@@ -598,7 +619,7 @@ console.log("🚀 SCRIPT LOADED");
             btn.addEventListener('click', () => {
                 const targetId = btn.dataset.scrollTo;
                 const targetElement = document.getElementById(targetId);
-                
+
                 if (targetElement) {
                     const headerOffset = 100;
                     const elementPosition = targetElement.getBoundingClientRect().top;
@@ -612,7 +633,7 @@ console.log("🚀 SCRIPT LOADED");
                     // Add highlight effect
                     targetElement.style.transition = 'box-shadow 0.3s ease';
                     targetElement.style.boxShadow = '0 0 30px rgba(155, 77, 255, 0.5)';
-                    
+
                     setTimeout(() => {
                         targetElement.style.boxShadow = '';
                     }, 2000);
