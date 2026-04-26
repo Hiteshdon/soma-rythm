@@ -2,7 +2,7 @@
  * SomaRhythm Music Academy - Main JavaScript
  * Handles all interactivity, animations, and form validation
  */
-console.log("🚀 SCRIPT LOADED");
+// console.log("🚀 SCRIPT LOADED");
 (function () {
     'use strict';
 
