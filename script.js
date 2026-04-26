@@ -549,7 +549,7 @@
             submitBtn.classList.remove('loading');
             submitBtn.disabled = false;
         }
-        console.log("🔥 SUBMIT CALLED");
+        //console.log("🔥 SUBMIT CALLED");
     }
 
     // ================================
