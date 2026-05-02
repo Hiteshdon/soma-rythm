@@ -486,7 +486,7 @@
             return `http://${window.location.hostname}:3000`;
         }
 
-        return 'https://soma-rythm-2.onrender.com';
+        return 'https://soma-rythm-jmi2.onrender.com';
     }
 
     const apiBaseUrl = getApiBaseUrl();
