@@ -1347,6 +1347,10 @@ address {
     }
     
     /* Hero */
+    .hero {
+        padding-top: 80px;
+    }
+
     .hero-stats {
         flex-direction: column;
         align-items: center;
